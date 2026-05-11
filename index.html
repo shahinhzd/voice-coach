@@ -7,660 +7,138 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --ink: #0e0e0e;
-    --paper: #f5f2eb;
-    --cream: #ede9df;
-    --accent: #c8402a;
-    --accent-light: #f0d5cf;
-    --gold: #b8922a;
-    --muted: #7a7570;
-    --border: #d4cfc6;
-    --card: #faf8f4;
-    --green: #2a7a4a;
-    --green-light: #d0eadb;
+    --ink: #0e0e0e; --paper: #f5f2eb; --cream: #ede9df;
+    --accent: #c8402a; --accent-light: #f0d5cf; --gold: #b8922a;
+    --muted: #7a7570; --border: #d4cfc6; --card: #faf8f4;
+    --green: #2a7a4a; --green-light: #d0eadb;
+    --s1: #1a5fa8; --s2: #7a2a7a; --s3: #2a7a4a; --s4: #b8922a;
   }
+  html,body { height:100%; }
+  body { font-family:'Instrument Sans',sans-serif; background:var(--paper); color:var(--ink); position:relative; }
+  body::before { content:''; position:fixed; inset:0; background-image: radial-gradient(ellipse 80% 50% at 20% 10%,rgba(200,64,42,0.06) 0%,transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%,rgba(184,146,42,0.05) 0%,transparent 60%); pointer-events:none; z-index:0; }
+  body::after { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.5; }
+  .container { max-width:780px; margin:0 auto; padding:0 20px 80px; position:relative; z-index:1; }
 
-  html { height: 100%; }
+  header { padding:14px 0 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; position:sticky; top:0; background:var(--paper); z-index:20; }
+  .logo-block h1 { font-family:'DM Serif Display',serif; font-size:clamp(22px,4vw,30px); line-height:1; letter-spacing:-0.5px; }
+  .logo-block h1 span { color:var(--accent); font-style:italic; }
+  .logo-block p { font-size:11px; color:var(--muted); margin-top:3px; }
 
-  body {
-    font-family: 'Instrument Sans', sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    min-height: 100%;
-    position: relative;
-  }
+  .drive-pill { display:flex; align-items:center; gap:7px; font-size:12px; font-family:'DM Mono',monospace; color:var(--muted); background:var(--cream); border:1px solid var(--border); border-radius:999px; padding:5px 13px; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+  .drive-pill:hover { border-color:var(--gold); color:var(--gold); }
+  .drive-pill .dot { width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0; transition:background 0.3s; }
+  .drive-pill.connected .dot { background:var(--green); }
+  .drive-pill.connected { color:var(--green); border-color:var(--green-light); }
 
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(200,64,42,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(184,146,42,0.05) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
-  }
+  .mode-bar { display:flex; gap:8px; flex-wrap:wrap; position:sticky; top:55px; background:var(--paper); z-index:19; padding:10px 0 0; }
+  .mode-btn { font-family:'Instrument Sans',sans-serif; font-size:13px; font-weight:500; padding:7px 15px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .mode-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .mode-btn.active { background:var(--ink); color:var(--paper); border-color:var(--ink); }
 
-  /* grain overlay */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0; opacity: 0.5;
-  }
+  .recorder-card { background:var(--card); border:1px solid var(--border); border-radius:0 0 14px 14px; padding:16px 22px 20px; margin-bottom:20px; box-shadow:0 4px 16px rgba(14,14,14,0.08); position:sticky; top:97px; z-index:18; }
+  .session-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .session-label { font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); }
+  .session-name-input { font-family:'Instrument Sans',sans-serif; font-size:14px; font-weight:500; background:transparent; border:none; border-bottom:1px dashed var(--border); color:var(--ink); padding:2px 6px; width:200px; outline:none; transition:border-color 0.2s; }
+  .session-name-input:focus { border-color:var(--accent); }
+  .timer { font-family:'DM Mono',monospace; font-size:24px; font-weight:500; letter-spacing:0.05em; }
+  .timer.recording { color:var(--accent); }
 
-  .container {
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 0 20px 60px;
-    position: relative; z-index: 1;
-  }
+  /* SPEAKER ROW */
+  .speaker-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .row-label { font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); }
+  .toggle-pill { display:flex; align-items:center; gap:6px; background:var(--cream); border:1px solid var(--border); border-radius:999px; padding:4px 12px; cursor:pointer; font-size:12px; font-family:'DM Mono',monospace; color:var(--muted); transition:all 0.15s; user-select:none; }
+  .toggle-pill.on { border-color:var(--s1); color:var(--s1); background:#e8f0fb; }
+  .toggle-pill .tog-dot { width:8px; height:8px; border-radius:50%; background:var(--border); transition:background 0.2s; }
+  .toggle-pill.on .tog-dot { background:var(--s1); }
+  .spk-count-row { display:flex; gap:6px; align-items:center; }
+  .spk-count-btn { font-family:'DM Mono',monospace; font-size:11px; padding:3px 10px; border-radius:999px; border:1px solid var(--border); background:white; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .spk-count-btn.active { background:var(--ink); color:white; border-color:var(--ink); }
 
-  /* HEADER */
-  header {
-    padding: 20px 0 16px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    background: var(--paper);
-    z-index: 10;
-  }
+  .waveform-wrap { height:40px; display:flex; align-items:center; justify-content:center; gap:3px; margin:10px 0; overflow:hidden; }
+  .wave-bar { width:3px; border-radius:99px; background:var(--accent); opacity:0.3; height:4px; }
+  .wave-bar.active { opacity:0.75; animation:wave-anim 0.8s ease-in-out infinite alternate; }
+  @keyframes wave-anim { from{height:4px} to{height:32px} }
+  .wave-bar.active:nth-child(2n){animation-delay:0.15s} .wave-bar.active:nth-child(3n){animation-delay:0.3s} .wave-bar.active:nth-child(4n){animation-delay:0.45s}
 
-  .logo-block h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(26px, 5vw, 38px);
-    line-height: 1;
-    letter-spacing: -0.5px;
-    color: var(--ink);
-  }
+  .status-line { text-align:center; font-size:12px; font-family:'DM Mono',monospace; color:var(--muted); min-height:18px; letter-spacing:0.04em; }
+  .controls-row { display:flex; align-items:center; justify-content:center; gap:18px; margin:12px 0 0; }
 
-  .logo-block h1 span { color: var(--accent); font-style: italic; }
-  .logo-block p { font-size: 13px; color: var(--muted); margin-top: 4px; letter-spacing: 0.02em; }
+  .record-btn { position:relative; width:66px; height:66px; border-radius:50%; border:2px solid var(--accent); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .record-btn::before { content:''; width:32px; height:32px; border-radius:50%; background:var(--accent); transition:all 0.2s; }
+  .record-btn.recording::before { border-radius:6px; width:22px; height:22px; }
+  .record-btn:hover { transform:scale(1.05); box-shadow:0 0 0 8px var(--accent-light); }
+  @keyframes pulse-ring { 0%{transform:scale(1);opacity:0.6} 100%{transform:scale(1.5);opacity:0} }
+  .record-btn.recording::after { content:''; position:absolute; inset:-6px; border-radius:50%; border:2px solid var(--accent); animation:pulse-ring 1.5s ease-out infinite; }
 
-  .drive-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 6px 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
+  .action-btn { font-family:'Instrument Sans',sans-serif; font-size:13px; font-weight:500; padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--cream); color:var(--ink); cursor:pointer; transition:all 0.15s; }
+  .action-btn:hover:not(:disabled) { border-color:var(--ink); background:var(--ink); color:var(--paper); }
+  .action-btn:disabled { opacity:0.35; cursor:default; }
 
-  .drive-status:hover { border-color: var(--gold); color: var(--gold); }
-
-  .drive-status .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-    transition: background 0.3s;
-  }
-
-  .drive-status.connected .dot { background: var(--green); }
-  .drive-status.connected { color: var(--green); border-color: var(--green-light); }
-
-  /* MODE SELECTOR */
-  .mode-bar {
-    display: flex;
-    gap: 8px;
-    margin: 0;
-    flex-wrap: wrap;
-    position: sticky;
-    top: 73px;
-    background: var(--paper);
-    z-index: 9;
-    padding: 12px 0 0;
-  }
-
-  .mode-btn {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 8px 18px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.01em;
-  }
-
-  .mode-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .mode-btn.active {
-    background: var(--ink);
-    color: var(--paper);
-    border-color: var(--ink);
-  }
-
-  /* RECORDER CARD */
-  .recorder-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0 0 14px 14px;
-    padding: 20px 28px 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 16px rgba(14,14,14,0.08);
-    position: sticky;
-    top: 73px;
-    z-index: 9;
-  }
-
-  .session-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .session-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-  }
-
-  .session-name-input {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    background: transparent;
-    border: none;
-    border-bottom: 1px dashed var(--border);
-    color: var(--ink);
-    padding: 2px 6px;
-    width: 220px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .session-name-input:focus { border-color: var(--accent); }
-
-  .timer {
-    font-family: 'DM Mono', monospace;
-    font-size: 28px;
-    font-weight: 500;
-    color: var(--ink);
-    letter-spacing: 0.05em;
-  }
-
-  .timer.recording { color: var(--accent); }
-
-  /* BIG RECORD BUTTON */
-  .controls-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    margin: 20px 0;
-  }
-
-  .record-btn {
-    position: relative;
-    width: 72px; height: 72px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-
-  .record-btn::before {
-    content: '';
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: var(--accent);
-    transition: all 0.2s;
-  }
-
-  .record-btn.recording::before {
-    border-radius: 6px;
-    width: 26px; height: 26px;
-  }
-
-  .record-btn:hover { transform: scale(1.05); box-shadow: 0 0 0 8px var(--accent-light); }
-
-  @keyframes pulse-ring {
-    0% { transform: scale(1); opacity: 0.6; }
-    100% { transform: scale(1.5); opacity: 0; }
-  }
-
-  .record-btn.recording::after {
-    content: '';
-    position: absolute; inset: -6px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    animation: pulse-ring 1.5s ease-out infinite;
-  }
-
-  .action-btn {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--cream);
-    color: var(--ink);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .action-btn:hover:not(:disabled) { border-color: var(--ink); background: var(--ink); color: var(--paper); }
-  .action-btn:disabled { opacity: 0.35; cursor: default; }
-  .action-btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .action-btn.primary:hover { background: var(--accent); border-color: var(--accent); }
-
-  /* WAVEFORM */
-  .waveform-wrap {
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    margin: 16px 0;
-    overflow: hidden;
-  }
-
-  .wave-bar {
-    width: 3px;
-    border-radius: 99px;
-    background: var(--accent);
-    opacity: 0.35;
-    height: 4px;
-    transition: height 0.1s ease;
-  }
-
-  .wave-bar.active {
-    opacity: 0.8;
-    animation: wave-anim 0.8s ease-in-out infinite alternate;
-  }
-
-  @keyframes wave-anim {
-    from { height: 4px; }
-    to { height: 36px; }
-  }
-
-  .wave-bar.active:nth-child(2n) { animation-delay: 0.15s; }
-  .wave-bar.active:nth-child(3n) { animation-delay: 0.3s; }
-  .wave-bar.active:nth-child(4n) { animation-delay: 0.45s; }
-  .wave-bar.active:nth-child(5n) { animation-delay: 0.1s; }
-
-  /* STATUS */
-  .status-line {
-    text-align: center;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    min-height: 18px;
-    letter-spacing: 0.04em;
-  }
+  .upload-zone { border:2px dashed var(--border); border-radius:10px; padding:22px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:12px; display:none; }
+  .upload-zone.active-mode { display:block; }
+  .upload-zone:hover,.upload-zone.dragover { border-color:var(--accent); background:var(--accent-light); }
+  .upload-zone p { font-size:13px; color:var(--muted); margin-top:6px; }
+  #fileInput { display:none; }
 
   /* TRANSCRIPT */
-  .transcript-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(14,14,14,0.06);
-  }
+  .transcript-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; box-shadow:0 2px 12px rgba(14,14,14,0.06); }
+  .card-header { display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-bottom:1px solid var(--border); background:var(--cream); flex-wrap:wrap; gap:8px; }
+  .card-title { font-family:'DM Serif Display',serif; font-size:15px; }
+  .card-actions { display:flex; gap:7px; flex-wrap:wrap; }
+  .mini-btn { font-family:'DM Mono',monospace; font-size:11px; padding:5px 11px; border-radius:6px; border:1px solid var(--border); background:white; color:var(--muted); cursor:pointer; transition:all 0.15s; letter-spacing:0.04em; }
+  .mini-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .mini-btn.gold { border-color:var(--gold); color:var(--gold); }
+  .mini-btn.gold:hover { background:var(--gold); color:white; }
 
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--cream);
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  .transcript-body { padding:18px; min-height:140px; max-height:360px; overflow-y:auto; }
+  .transcript-body::-webkit-scrollbar { width:4px; }
+  .transcript-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
+  .transcript-empty { color:var(--muted); font-size:13px; font-family:'DM Mono',monospace; letter-spacing:0.04em; }
 
-  .card-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 16px;
-    color: var(--ink);
-  }
+  /* SPEAKER BLOCKS */
+  .speaker-block { margin-bottom:16px; }
+  .speaker-tag { display:inline-block; font-family:'DM Mono',monospace; font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.08em; padding:2px 9px; border-radius:999px; margin-bottom:5px; color:white; }
+  .spk-1{background:var(--s1)} .spk-2{background:var(--s2)} .spk-3{background:var(--s3)} .spk-4{background:var(--s4)}
+  .speaker-text { font-size:15px; line-height:1.75; color:var(--ink); font-family:'Instrument Sans',sans-serif; padding-left:10px; border-left:2px solid var(--border); }
+  .spk-1-b{border-left-color:var(--s1)} .spk-2-b{border-left-color:var(--s2)} .spk-3-b{border-left-color:var(--s3)} .spk-4-b{border-left-color:var(--s4)}
+  .plain-text { font-size:15px; line-height:1.75; font-family:'Instrument Sans',sans-serif; }
+  .interim-line { color:var(--muted); font-style:italic; font-size:14px; font-family:'Instrument Sans',sans-serif; padding:4px 0 4px 10px; }
 
-  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .mini-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: white;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.04em;
-  }
-
-  .mini-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .mini-btn.highlight { border-color: var(--gold); color: var(--gold); }
-  .mini-btn.highlight:hover { background: var(--gold); color: white; }
-
-  .transcript-body {
-    padding: 20px;
-    min-height: 120px;
-    max-height: 280px;
-    overflow-y: auto;
-  }
-
-  .transcript-body p {
-    font-size: 15px;
-    line-height: 1.75;
-    color: var(--ink);
-    font-family: 'Instrument Sans', sans-serif;
-  }
-
-  .transcript-body p.interim {
-    color: var(--muted);
-    font-style: italic;
-  }
-
-  .transcript-empty {
-    color: var(--muted);
-    font-size: 13px;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.04em;
-  }
-
-  .transcript-body::-webkit-scrollbar { width: 4px; }
-  .transcript-body::-webkit-scrollbar-track { background: transparent; }
-  .transcript-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-  /* WORD COUNT */
-  .transcript-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    border-top: 1px solid var(--border);
-    background: var(--cream);
-  }
-
-  .word-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
-
-  /* FEEDBACK */
-  .feedback-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(14,14,14,0.06);
-  }
-
-  .feedback-body {
-    padding: 20px;
-    min-height: 80px;
-  }
-
-  .feedback-empty {
-    color: var(--muted);
-    font-size: 13px;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.04em;
-  }
-
-  .feedback-content { display: none; }
-  .feedback-content.visible { display: block; }
-
-  .score-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-
-  .score-pill {
-    flex: 1;
-    min-width: 100px;
-    background: var(--cream);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    text-align: center;
-  }
-
-  .score-pill .score-num {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    line-height: 1;
-    color: var(--ink);
-  }
-
-  .score-pill .score-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  .score-pill.good .score-num { color: var(--green); }
-  .score-pill.warn .score-num { color: var(--gold); }
-  .score-pill.bad .score-num { color: var(--accent); }
-
-  .section-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
-
-  .feedback-section { margin-bottom: 18px; }
-
-  .feedback-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: var(--cream);
-    border-left: 3px solid var(--border);
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .feedback-item.positive { border-left-color: var(--green); }
-  .feedback-item.warning { border-left-color: var(--gold); }
-  .feedback-item.improvement { border-left-color: var(--accent); }
-
-  .feedback-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .transcript-footer { display:flex; align-items:center; justify-content:space-between; padding:9px 18px; border-top:1px solid var(--border); background:var(--cream); }
+  .word-count { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); }
 
   /* DRIVE PANEL */
-  .drive-panel {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(14,14,14,0.06);
-    display: none;
+  .drive-panel { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; box-shadow:0 2px 12px rgba(14,14,14,0.06); display:none; }
+  .drive-panel.visible { display:block; }
+  .drive-connect-area { padding:24px 20px; }
+  .drive-connect-area h3 { font-family:'DM Serif Display',serif; font-size:18px; margin-bottom:8px; }
+  .drive-connect-area p { font-size:13px; color:var(--muted); margin-bottom:14px; line-height:1.6; }
+  .folder-input-row { display:flex; gap:8px; margin-bottom:10px; }
+  .folder-input { flex:1; font-family:'DM Mono',monospace; font-size:12px; padding:9px 12px; border:1px solid var(--border); border-radius:8px; outline:none; background:white; transition:border-color 0.2s; min-width:0; }
+  .folder-input:focus { border-color:var(--s1); }
+  .connect-btn { display:inline-flex; align-items:center; gap:7px; font-family:'Instrument Sans',sans-serif; font-size:13px; font-weight:500; padding:9px 18px; border-radius:8px; border:none; background:#1a73e8; color:white; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .connect-btn:hover:not(:disabled) { background:#1558b0; }
+  .connect-btn:disabled { opacity:0.4; cursor:default; }
+  .how-to { background:var(--cream); border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:12px; color:var(--muted); line-height:1.7; }
+  .how-to strong { color:var(--ink); }
+  .connected-box { margin:0 20px 16px; background:var(--green-light); border:1px solid var(--green); border-radius:10px; padding:14px 16px; display:none; }
+  .connected-box.visible { display:block; }
+  .connected-box p { font-size:13px; color:var(--green); font-family:'DM Mono',monospace; line-height:1.6; }
+  .connected-box a { color:var(--green); font-weight:600; }
+  .drive-actions { padding:0 20px 16px; display:flex; gap:8px; }
+
+  .loading-row { display:flex; align-items:center; gap:10px; padding:16px 0; font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .spinner { width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
+
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--ink); color:var(--paper); font-family:'DM Mono',monospace; font-size:12px; letter-spacing:0.04em; padding:10px 20px; border-radius:999px; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index:999; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  @media(max-width:520px) {
+    .controls-row{gap:12px} .action-btn{font-size:12px;padding:8px 12px} .session-name-input{width:140px}
+    .card-header{flex-direction:column;align-items:flex-start} .folder-input-row{flex-direction:column}
   }
-
-  .drive-panel.visible { display: block; }
-
-  .drive-connect-area {
-    padding: 28px 20px;
-    text-align: center;
-  }
-
-  .drive-connect-area h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    margin-bottom: 8px;
-  }
-
-  .drive-connect-area p {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 20px;
-    line-height: 1.6;
-    max-width: 380px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .drive-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 12px 24px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: white;
-    color: var(--ink);
-    cursor: pointer;
-    transition: all 0.15s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-
-  .drive-btn:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.12); transform: translateY(-1px); }
-
-  .drive-files {
-    padding: 14px 20px;
-    display: none;
-  }
-
-  .drive-files.visible { display: block; }
-
-  .drive-file-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    margin-bottom: 8px;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-
-  .drive-file-item:hover { background: var(--cream); }
-
-  .drive-file-name {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--ink);
-  }
-
-  .drive-file-date {
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .load-btn {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 5px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .load-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* LOADING */
-  .loading-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 16px 0;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
-  }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--ink);
-    color: var(--paper);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.04em;
-    padding: 10px 20px;
-    border-radius: 999px;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 999;
-    white-space: nowrap;
-  }
-
-  .toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* MOBILE */
-  @media (max-width: 520px) {
-    .controls-row { gap: 12px; }
-    .action-btn { font-size: 12px; padding: 8px 14px; }
-    .session-name-input { width: 160px; }
-    .score-pill .score-num { font-size: 22px; }
-    .card-header { flex-direction: column; align-items: flex-start; }
-  }
-
-  /* UPLOAD ZONE */
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 28px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 16px;
-    display: none;
-  }
-
-  .upload-zone.active-mode { display: block; }
-  .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--accent-light); }
-
-  .upload-zone p { font-size: 14px; color: var(--muted); margin-top: 8px; }
-  .upload-icon { font-size: 32px; }
-  #fileInput { display: none; }
 </style>
 </head>
 <body>
@@ -669,69 +147,79 @@
   <header>
     <div class="logo-block">
       <h1>Voice<span>Coach</span></h1>
-      <p>Interview Intelligence — Record · Transcribe · Analyze</p>
+      <p>Record · Transcribe · Save to Drive</p>
     </div>
-    <button class="drive-status" id="driveBtn" onclick="toggleDrivePanel()">
+    <button class="drive-pill" id="driveBtn" onclick="toggleDrivePanel()">
       <span class="dot" id="driveDot"></span>
       <span id="driveLabel">Connect Drive</span>
     </button>
   </header>
 
-  <!-- MODE BAR -->
   <div class="mode-bar">
     <button class="mode-btn active" onclick="setMode('live')">🎙 Live Record</button>
-    <button class="mode-btn" onclick="setMode('upload')">📁 Upload Audio/Text</button>
+    <button class="mode-btn" onclick="setMode('upload')">📁 Upload Text</button>
     <button class="mode-btn" onclick="toggleDrivePanel()">☁️ Drive Folder</button>
   </div>
 
-  <!-- RECORDER CARD -->
-  <div class="recorder-card" id="recorderCard">
+  <div class="recorder-card">
     <div class="session-meta">
       <div>
         <div class="session-label">Session Name</div>
-        <input class="session-name-input" id="sessionName" type="text" placeholder="e.g. Google PM Interview" value="">
+        <input class="session-name-input" id="sessionName" type="text" placeholder="e.g. Google PM Interview">
       </div>
       <div class="timer" id="timer">00:00</div>
     </div>
 
-    <!-- UPLOAD ZONE (shown in upload mode) -->
-    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
-         ondragover="event.preventDefault(); this.classList.add('dragover')"
+    <!-- SPEAKER DETECTION -->
+    <div class="speaker-row">
+      <span class="row-label">Speaker Detection</span>
+      <div class="toggle-pill" id="speakerToggle" onclick="toggleSpeakerMode()">
+        <span class="tog-dot"></span>
+        <span id="toggleLabel">Off</span>
+      </div>
+      <div class="spk-count-row" id="spkCountRow" style="display:none;">
+        <span class="row-label">Speakers:</span>
+        <button class="spk-count-btn active" id="spk2" onclick="setSpeakerCount(2)">2</button>
+        <button class="spk-count-btn" id="spk3" onclick="setSpeakerCount(3)">3</button>
+        <button class="spk-count-btn" id="spk4" onclick="setSpeakerCount(4)">4</button>
+      </div>
+    </div>
+
+    <!-- UPLOAD ZONE -->
+    <div class="upload-zone" id="uploadZone"
+         onclick="document.getElementById('fileInput').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
          ondragleave="this.classList.remove('dragover')"
          ondrop="handleDrop(event)">
-      <div class="upload-icon">🎵</div>
-      <strong>Drop audio file or click to browse</strong>
-      <p>MP3, M4A, WAV, or paste a transcript below</p>
-      <input type="file" id="fileInput" accept="audio/*,.txt" onchange="handleFileInput(event)">
+      <div style="font-size:28px;">📄</div>
+      <strong>Drop a .txt file or click to browse</strong>
+      <p>Plain text transcripts only</p>
+      <input type="file" id="fileInput" accept=".txt" onchange="handleFileInput(event)">
     </div>
 
-    <!-- WAVEFORM -->
-    <div class="waveform-wrap" id="waveform">
-      <!-- bars generated by JS -->
-    </div>
-
+    <div class="waveform-wrap" id="waveform"></div>
     <div class="status-line" id="statusLine">Press the button to start recording</div>
 
     <div class="controls-row">
       <button class="action-btn" id="clearBtn" onclick="clearSession()" disabled>Clear</button>
-      <button class="record-btn" id="recordBtn" onclick="toggleRecording()" title="Start / Stop"></button>
+      <button class="record-btn" id="recordBtn" onclick="toggleRecording()"></button>
       <button class="action-btn" onclick="copyTranscript()">Copy</button>
     </div>
   </div>
 
-  <!-- TRANSCRIPT CARD -->
+  <!-- TRANSCRIPT -->
   <div class="transcript-card">
     <div class="card-header">
       <div class="card-title">Transcript</div>
       <div class="card-actions">
         <button class="mini-btn" onclick="copyTranscript()">Copy</button>
-        <button class="mini-btn highlight" id="saveDriveBtn" onclick="saveToDrive()" disabled>↑ Save to Drive</button>
+        <button class="mini-btn gold" id="saveDriveBtn" onclick="saveToDrive()" disabled>↑ Save to Drive</button>
       </div>
     </div>
     <div class="transcript-body" id="transcriptBody">
       <span class="transcript-empty" id="transcriptEmpty">Your transcript will appear here as you speak…</span>
-      <p id="finalText"></p>
-      <p class="interim" id="interimText"></p>
+      <div id="segmentsContainer"></div>
+      <div class="interim-line" id="interimLine" style="display:none;"></div>
     </div>
     <div class="transcript-footer">
       <span class="word-count" id="wordCount">0 words</span>
@@ -739,557 +227,429 @@
     </div>
   </div>
 
-
-
   <!-- DRIVE PANEL -->
   <div class="drive-panel" id="drivePanel">
     <div class="card-header">
-      <div class="card-title">Google Drive — Transcripts Folder</div>
+      <div class="card-title">Google Drive — Shared Folder</div>
       <button class="mini-btn" onclick="toggleDrivePanel()">Close ✕</button>
     </div>
+
     <div class="drive-connect-area" id="driveConnectArea">
-      <h3>Connect your Drive</h3>
-      <p>Connect Google Drive so VoiceCoach can automatically save every transcript and analysis to a shared folder — no manual uploads needed.</p>
-      <button class="drive-btn" onclick="connectDrive()">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 22.5l-8-14h16z"/><path fill="#0F9D58" d="M6.5 35l8-14 8 14z"/><path fill="#FBBC05" d="M39.5 35H22.5l8.5-14.5z"/></svg>
-        Connect Google Drive
-      </button>
-      <p style="margin-top:14px; font-size:12px;">You'll authorize once — Claude will remember the folder.</p>
+      <h3>Link a shared folder</h3>
+      <p>Paste the sharing link of a Google Drive folder. Every transcript you save will be downloaded and you can drop it straight into that folder — or if you have Google Drive desktop sync, it appears automatically.</p>
+
+      <div class="folder-input-row">
+        <input class="folder-input" id="folderUrlInput" type="url"
+               placeholder="https://drive.google.com/drive/folders/…"
+               oninput="onFolderInput()">
+        <button class="connect-btn" id="connectBtn" onclick="connectFolder()" disabled>
+          <svg width="15" height="15" viewBox="0 0 48 48"><path fill="#fff" d="M24 22.5l-8-14h16z"/><path fill="#fff" d="M6.5 35l8-14 8 14z"/><path fill="#fff" d="M39.5 35H22.5l8.5-14.5z"/></svg>
+          Connect
+        </button>
+      </div>
+
+      <div class="how-to">
+        <strong>How to get the folder link:</strong><br>
+        1. Open <a href="https://drive.google.com" target="_blank" rel="noopener" style="color:var(--s1);">Google Drive</a><br>
+        2. Right-click the folder you want → <strong>Share</strong> → <strong>Copy link</strong><br>
+        3. Set access to <strong>"Anyone with the link"</strong> (so the app can open it)<br>
+        4. Paste the link above and click Connect
+      </div>
     </div>
-    <div class="drive-files" id="driveFiles">
-      <div id="driveFileList"></div>
-      <button class="mini-btn" onclick="loadDriveFiles()" style="margin-top:8px;">↻ Refresh</button>
+
+    <div class="connected-box" id="connectedBox">
+      <p>✓ Folder connected — <a id="folderOpenLink" href="#" target="_blank" rel="noopener">Open in Google Drive ↗</a></p>
+      <p id="folderIdText" style="margin-top:4px; font-size:11px; opacity:0.8;"></p>
+    </div>
+
+    <div class="drive-actions" id="driveActionsRow" style="display:none;">
+      <button class="mini-btn" onclick="openDriveFolder()">📂 Open Folder</button>
+      <button class="mini-btn" style="color:var(--accent);" onclick="disconnectDrive()">Disconnect</button>
     </div>
   </div>
 
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────
-let recognition = null;
-let isRecording = false;
-let timerInterval = null;
-let seconds = 0;
-let finalTranscript = '';
-let interimTranscript = '';
-let mode = 'live'; // 'live' | 'upload'
-let sessionType = 'Job Interview'; // cycles
-let driveConnected = false;
-let driveFolder = null;
-const SESSION_TYPES = ['Job Interview', 'Podcast / Media', 'Sales Call', 'Conference Talk', 'Presentation'];
-let sessionTypeIndex = 0;
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let recognition  = null;
+let isRecording  = false;
+let timerInt     = null;
+let seconds      = 0;
+let mode         = 'live';
 
-// ─── WAVEFORM SETUP ──────────────────────────────────────────────
-const waveform = document.getElementById('waveform');
-const BAR_COUNT = 36;
-for (let i = 0; i < BAR_COUNT; i++) {
-  const bar = document.createElement('div');
-  bar.className = 'wave-bar';
-  waveform.appendChild(bar);
+// Speaker diarization
+let speakerOn    = false;
+let numSpeakers  = 2;
+let curSpeaker   = 1;
+let segments     = [];      // [{speaker:int, text:string}]
+let interim      = '';
+
+// Audio pitch analysis
+let audioCtx     = null;
+let analyser     = null;
+let micStream    = null;
+let pitchBuf     = [];
+let silTimer     = null;
+let pitchProfiles= {};      // speakerNum → avgPitch
+
+// Drive
+let driveConnected= false;
+let driveFolderUrl= '';
+let driveFolderId = '';
+
+// ── WAVEFORM INIT ─────────────────────────────────────────────────────────────
+const wvEl = document.getElementById('waveform');
+for(let i=0;i<34;i++){const b=document.createElement('div');b.className='wave-bar';wvEl.appendChild(b);}
+
+// ── RESTORE DRIVE ─────────────────────────────────────────────────────────────
+try{
+  const saved=localStorage.getItem('vc_drive');
+  if(saved){const d=JSON.parse(saved);applyDriveConnected(d.url,d.id);}
+}catch(e){}
+
+// ── WAVEFORM ──────────────────────────────────────────────────────────────────
+function setWave(on){document.querySelectorAll('.wave-bar').forEach((b,i)=>{b.classList.toggle('active',on);if(on)b.style.animationDelay=(i*0.04)+'s';});}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+function startTimer(){
+  seconds=0;
+  const el=document.getElementById('timer');
+  el.classList.add('recording');
+  timerInt=setInterval(()=>{seconds++;el.textContent=pad(Math.floor(seconds/60))+':'+pad(seconds%60);},1000);
+}
+function stopTimer(){clearInterval(timerInt);document.getElementById('timer').classList.remove('recording');}
+function pad(n){return String(n).padStart(2,'0');}
+
+// ── SPEAKER DIARIZATION CONTROLS ─────────────────────────────────────────────
+function toggleSpeakerMode(){
+  speakerOn=!speakerOn;
+  const tog=document.getElementById('speakerToggle');
+  tog.classList.toggle('on',speakerOn);
+  document.getElementById('toggleLabel').textContent=speakerOn?'On':'Off';
+  document.getElementById('spkCountRow').style.display=speakerOn?'flex':'none';
+  showToast(speakerOn?'Speaker detection on — voices will be labeled separately':'Speaker detection off');
+}
+function setSpeakerCount(n){
+  numSpeakers=n;
+  [2,3,4].forEach(x=>document.getElementById('spk'+x).classList.toggle('active',x===n));
 }
 
-function setWaveActive(active) {
-  document.querySelectorAll('.wave-bar').forEach((b, i) => {
-    b.classList.toggle('active', active);
-    if (active) b.style.animationDelay = (i * 0.04) + 's';
-  });
-}
-
-// ─── TIMER ───────────────────────────────────────────────────────
-function startTimer() {
-  seconds = 0;
-  timerInterval = setInterval(() => {
-    seconds++;
-    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-    const s = String(seconds % 60).padStart(2, '0');
-    document.getElementById('timer').textContent = m + ':' + s;
-  }, 1000);
-  document.getElementById('timer').classList.add('recording');
-}
-
-function stopTimer() {
-  clearInterval(timerInterval);
-  document.getElementById('timer').classList.remove('recording');
-}
-
-// ─── SPEECH RECOGNITION ──────────────────────────────────────────
-function setupRecognition() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) return null;
-
-  const r = new SpeechRecognition();
-  r.continuous = true;
-  r.interimResults = true;
-  r.lang = 'en-US';
-  r.maxAlternatives = 1;
-
-  r.onstart = () => {
-    setStatus('🔴 Recording… press button to stop');
-    setWaveActive(true);
-  };
-
-  r.onresult = (e) => {
-    interimTranscript = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) {
-        finalTranscript += e.results[i][0].transcript + ' ';
-      } else {
-        interimTranscript += e.results[i][0].transcript;
+// ── PITCH DETECTION ───────────────────────────────────────────────────────────
+function startAudio(stream){
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=2048;
+  audioCtx.createMediaStreamSource(stream).connect(analyser);
+  const buf=new Float32Array(analyser.fftSize);
+  (function tick(){
+    if(!isRecording)return;
+    analyser.getFloatTimeDomainData(buf);
+    const rms=getRMS(buf);
+    if(rms<0.01){
+      if(!silTimer&&speakerOn)silTimer=setTimeout(()=>{pitchBuf=[];silTimer=null;},1200);
+    } else {
+      if(silTimer){clearTimeout(silTimer);silTimer=null;}
+      const p=autoCorr(buf,audioCtx.sampleRate);
+      if(p>80&&p<450&&speakerOn){
+        pitchBuf.push(p);
+        if(pitchBuf.length>=8){
+          const avg=pitchBuf.reduce((a,b)=>a+b,0)/pitchBuf.length;
+          checkSwitch(avg);
+          pitchBuf=pitchBuf.slice(-4);
+        }
       }
     }
-    updateTranscriptUI();
+    requestAnimationFrame(tick);
+  })();
+}
+
+function getRMS(buf){let s=0;for(let i=0;i<buf.length;i++)s+=buf[i]*buf[i];return Math.sqrt(s/buf.length);}
+
+function autoCorr(buf,sr){
+  const half=Math.floor(buf.length/2);
+  let bestOff=-1,bestCorr=0,last=1;
+  let rms=getRMS(buf);if(rms<0.01)return -1;
+  for(let o=0;o<half;o++){
+    let c=0;
+    for(let i=0;i<half;i++)c+=Math.abs(buf[i]-buf[i+o]);
+    c=1-(c/half);
+    if(c>0.9&&c>last){bestCorr=c;bestOff=o;}
+    last=c;
+  }
+  return bestCorr>0.9?sr/bestOff:-1;
+}
+
+function checkSwitch(pitch){
+  if(Object.keys(pitchProfiles).length===0){pitchProfiles[1]=pitch;return;}
+  let closest=curSpeaker,dist=Infinity;
+  for(let s=1;s<=numSpeakers;s++){
+    if(pitchProfiles[s]!==undefined){
+      const d=Math.abs(pitchProfiles[s]-pitch);
+      if(d<dist){dist=d;closest=s;}
+    }
+  }
+  // New speaker?
+  if(dist>38&&Object.keys(pitchProfiles).length<numSpeakers){
+    const ns=Object.keys(pitchProfiles).length+1;
+    pitchProfiles[ns]=pitch;
+    closest=ns;
+  } else if(pitchProfiles[closest]!==undefined){
+    pitchProfiles[closest]=pitchProfiles[closest]*0.8+pitch*0.2;
+  } else {
+    pitchProfiles[closest]=pitch;
+  }
+  if(closest!==curSpeaker){
+    curSpeaker=closest;
+    const last=segments[segments.length-1];
+    if(!last||last.text.trim())segments.push({speaker:curSpeaker,text:''});
+    render();
+  }
+}
+
+function stopAudio(){
+  if(silTimer){clearTimeout(silTimer);silTimer=null;}
+  try{if(analyser)analyser.disconnect();}catch(e){}
+  try{if(audioCtx)audioCtx.close();}catch(e){}
+  if(micStream)micStream.getTracks().forEach(t=>t.stop());
+  audioCtx=analyser=micStream=null;
+}
+
+// ── SPEECH RECOGNITION ────────────────────────────────────────────────────────
+function makeRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return null;
+  const r=new SR();
+  r.continuous=true; r.interimResults=true; r.lang='en-US'; r.maxAlternatives=1;
+
+  r.onstart=()=>{setStatus('🔴 Recording… press button to stop');setWave(true);};
+
+  r.onresult=(e)=>{
+    let fin=''; interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)fin+=e.results[i][0].transcript+' ';
+      else interim+=e.results[i][0].transcript;
+    }
+    if(fin){
+      if(segments.length===0)segments.push({speaker:speakerOn?curSpeaker:0,text:''});
+      segments[segments.length-1].text+=fin;
+    }
+    render();
   };
 
-  r.onerror = (e) => {
-    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-      setStatus('⚠ Microphone access denied. Allow mic and try again.');
-      isRecording = false;
+  r.onerror=(e)=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      setStatus('⚠ Mic denied. Open this page over HTTPS and allow microphone.');
+      isRecording=false;
       document.getElementById('recordBtn').classList.remove('recording');
-      setWaveActive(false);
-      stopTimer();
-    } else if (e.error === 'no-speech') {
-      // silence — keep going, onend will restart
-    } else {
-      setStatus('⚠ Error: ' + e.error + ' — restarting…');
+      setWave(false);stopTimer();stopAudio();
     }
+    // no-speech → keep going; onend will restart
   };
 
-  r.onend = () => {
-    // Only restart if the user hasn't pressed stop
-    if (isRecording) {
-      try { r.start(); } catch(ex) { /* already starting */ }
-    } else {
-      setWaveActive(false);
-      setStatus('Recording stopped. Transcript ready.');
-      if (finalTranscript.trim()) {
-        document.getElementById('saveDriveBtn').disabled = !driveConnected;
-      }
-    }
+  r.onend=()=>{
+    if(isRecording){try{r.start();}catch(ex){}}
+    else{setWave(false);setStatus('Stopped. Transcript ready.');updateCounts();}
   };
-
   return r;
 }
 
-// ─── RECORDING CONTROL ───────────────────────────────────────────
-function toggleRecording() {
-  isRecording ? stopRecording() : startRecording();
-}
+// ── RECORDING ─────────────────────────────────────────────────────────────────
+function toggleRecording(){isRecording?stopRecording():startRecording();}
 
-function startRecording() {
-  if (recognition) { try { recognition.stop(); } catch(e){} }
-  recognition = setupRecognition();
-  if (!recognition) {
-    setStatus('⚠ Speech recognition not supported. Use Chrome or Safari.');
+async function startRecording(){
+  if(recognition){try{recognition.stop();}catch(e){}}
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    if(speakerOn)startAudio(micStream);
+  }catch(err){
+    setStatus('⚠ Mic access denied. Allow microphone in your browser settings.');
     return;
   }
-  isRecording = true;
+  recognition=makeRecognition();
+  if(!recognition){setStatus('⚠ Speech recognition not supported. Use Chrome or Safari.');return;}
+  isRecording=true;
+  curSpeaker=1; pitchProfiles={}; pitchBuf=[];
+  if(segments.length===0||segments[segments.length-1].text.trim())
+    segments.push({speaker:speakerOn?1:0,text:''});
   document.getElementById('recordBtn').classList.add('recording');
-  document.getElementById('clearBtn').disabled = false;
-  setStatus('Starting…');
-  startTimer();
-  try {
-    recognition.start();
-  } catch(e) {
-    setStatus('⚠ Could not start mic: ' + e.message);
-    isRecording = false;
+  document.getElementById('clearBtn').disabled=false;
+  startTimer(); setStatus('Starting…');
+  try{recognition.start();}catch(e){
+    setStatus('⚠ '+e.message);
+    isRecording=false;
     document.getElementById('recordBtn').classList.remove('recording');
-    stopTimer();
+    stopTimer();stopAudio();
   }
 }
 
-function stopRecording() {
-  isRecording = false;
+function stopRecording(){
+  isRecording=false;
   document.getElementById('recordBtn').classList.remove('recording');
-  stopTimer();
-  if (recognition) {
-    try { recognition.stop(); } catch(e) {}
-    recognition = null;
+  stopTimer();stopAudio();
+  if(recognition){try{recognition.stop();}catch(e){} recognition=null;}
+  interim=''; render(); updateCounts();
+  if(driveConnected&&getPlain().trim())document.getElementById('saveDriveBtn').disabled=false;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+const spkNames=['','Speaker 1','Speaker 2','Speaker 3','Speaker 4'];
+const spkColors=['','spk-1','spk-2','spk-3','spk-4'];
+const spkBorders=['','spk-1-b','spk-2-b','spk-3-b','spk-4-b'];
+
+function render(){
+  const container=document.getElementById('segmentsContainer');
+  const emptyEl=document.getElementById('transcriptEmpty');
+  const intEl=document.getElementById('interimLine');
+  const body=document.getElementById('transcriptBody');
+  const hasText=segments.some(s=>s.text.trim());
+  emptyEl.style.display=(hasText||interim)?'none':'';
+
+  if(speakerOn){
+    container.innerHTML=segments.filter(s=>s.text.trim()).map(s=>`
+      <div class="speaker-block">
+        <div class="speaker-tag ${spkColors[s.speaker]||'spk-1'}">${spkNames[s.speaker]||'Speaker '+s.speaker}</div>
+        <div class="speaker-text ${spkBorders[s.speaker]||'spk-1-b'}">${esc(s.text.trim())}</div>
+      </div>`).join('');
+  } else {
+    const all=segments.map(s=>s.text).join('');
+    container.innerHTML=all?`<p class="plain-text">${esc(all)}</p>`:'';
   }
-  interimTranscript = '';
-  updateTranscriptUI();
+
+  intEl.textContent=interim;
+  intEl.style.display=interim?'':'none';
+  body.scrollTop=body.scrollHeight;
+  updateCounts();
 }
 
-// ─── TRANSCRIPT UI ───────────────────────────────────────────────
-function updateTranscriptUI() {
-  const empty = document.getElementById('transcriptEmpty');
-  const finalEl = document.getElementById('finalText');
-  const interimEl = document.getElementById('interimText');
-  const body = document.getElementById('transcriptBody');
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-  const combined = finalTranscript + interimTranscript;
-  empty.style.display = combined ? 'none' : '';
-  finalEl.textContent = finalTranscript;
-  interimEl.textContent = interimTranscript;
-  body.scrollTop = body.scrollHeight;
-
-  const words = finalTranscript.trim() ? finalTranscript.trim().split(/\s+/).length : 0;
-  document.getElementById('wordCount').textContent = words + ' words';
-  document.getElementById('charCount').textContent = finalTranscript.length + ' chars';
-
-  if (finalTranscript.trim()) document.getElementById('saveDriveBtn').disabled = !driveConnected;
+function getPlain(){
+  if(speakerOn)return segments.filter(s=>s.text.trim()).map(s=>`[${spkNames[s.speaker]||'Speaker '+s.speaker}]\n${s.text.trim()}`).join('\n\n');
+  return segments.map(s=>s.text).join('');
 }
 
-function setTranscriptText(text) {
-  finalTranscript = text;
-  interimTranscript = '';
-  updateTranscriptUI();
-  document.getElementById('clearBtn').disabled = false;
+function updateCounts(){
+  const p=getPlain();
+  const w=p.trim()?p.trim().split(/\s+/).length:0;
+  document.getElementById('wordCount').textContent=w+' words';
+  document.getElementById('charCount').textContent=p.length+' chars';
+  if(p.trim()&&driveConnected)document.getElementById('saveDriveBtn').disabled=false;
 }
 
-function copyTranscript() {
-  if (!finalTranscript.trim()) { showToast('Nothing to copy yet'); return; }
-  navigator.clipboard.writeText(finalTranscript).then(() => showToast('Transcript copied!'));
+function copyTranscript(){
+  const t=getPlain();
+  if(!t.trim()){showToast('Nothing to copy yet');return;}
+  navigator.clipboard.writeText(t).then(()=>showToast('Transcript copied!'));
 }
 
-// ─── CLEAR ───────────────────────────────────────────────────────
-function clearSession() {
-  if (isRecording) stopRecording();
-  finalTranscript = '';
-  interimTranscript = '';
-  seconds = 0;
-  document.getElementById('timer').textContent = '00:00';
-  updateTranscriptUI();
-  document.getElementById('clearBtn').disabled = true;
-  document.getElementById('saveDriveBtn').disabled = true;
-  setStatus('Session cleared. Press record to start.');
+// ── CLEAR ─────────────────────────────────────────────────────────────────────
+function clearSession(){
+  if(isRecording)stopRecording();
+  segments=[];interim='';pitchProfiles={};curSpeaker=1;pitchBuf=[];
+  seconds=0;document.getElementById('timer').textContent='00:00';
+  render();
+  document.getElementById('clearBtn').disabled=true;
+  document.getElementById('saveDriveBtn').disabled=true;
+  setStatus('Cleared. Press record to start.');
 }
 
-// ─── MODES ───────────────────────────────────────────────────────
-function setMode(m) {
-  mode = m;
-  document.querySelectorAll('.mode-btn').forEach((btn, i) => {
-    btn.classList.toggle('active', ['live','upload','drive'][i] === m);
-  });
-  const uploadZone = document.getElementById('uploadZone');
-  uploadZone.classList.toggle('active-mode', m === 'upload');
-  const recordBtn = document.getElementById('recordBtn');
-  recordBtn.style.opacity = m === 'upload' ? '0.3' : '1';
-  recordBtn.style.pointerEvents = m === 'upload' ? 'none' : '';
-  setStatus(m === 'live' ? 'Press the button to start recording' : 'Drop or upload a file, or paste text below');
+// ── MODES ─────────────────────────────────────────────────────────────────────
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',['live','upload','drive'][i]===m));
+  document.getElementById('uploadZone').classList.toggle('active-mode',m==='upload');
+  setStatus(m==='live'?'Press the button to start recording':'Upload a .txt transcript file');
 }
 
-// ─── FILE UPLOAD ─────────────────────────────────────────────────
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('uploadZone').classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) processFile(file);
+// ── FILE UPLOAD ───────────────────────────────────────────────────────────────
+function handleDrop(e){e.preventDefault();document.getElementById('uploadZone').classList.remove('dragover');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);}
+function handleFileInput(e){if(e.target.files[0])processFile(e.target.files[0]);}
+function processFile(file){
+  const r=new FileReader();
+  r.onload=e=>{segments=[{speaker:0,text:e.target.result}];render();document.getElementById('clearBtn').disabled=false;if(driveConnected)document.getElementById('saveDriveBtn').disabled=false;showToast('File loaded');};
+  r.readAsText(file);
 }
 
-function handleFileInput(e) {
-  const file = e.target.files[0];
-  if (file) processFile(file);
+// ── GOOGLE DRIVE FOLDER ───────────────────────────────────────────────────────
+function onFolderInput(){
+  const v=document.getElementById('folderUrlInput').value.trim();
+  document.getElementById('connectBtn').disabled=!(v.includes('drive.google.com')&&(v.includes('/folders/')||v.includes('id=')));
 }
 
-function processFile(file) {
-  if (file.type === 'text/plain') {
-    const reader = new FileReader();
-    reader.onload = (e) => setTranscriptText(e.target.result);
-    reader.readAsText(file);
-    showToast('Text file loaded');
-    document.getElementById('analyzeBtn').disabled = false;
-  } else if (file.type.startsWith('audio/')) {
-    // For audio we use speech recognition on the file via Web Audio
-    // On mobile/desktop browsers this requires server-side Whisper
-    // So we'll show a helpful message and use the Claude API for audio analysis
-    showToast('Audio: use Live Record mode for best results on mobile');
-    setStatus('For audio files, please use Live Record mode or paste a transcript.');
-  }
+function extractId(url){
+  let m=url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if(m)return m[1];
+  m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return m?m[1]:null;
 }
 
-// ─── SESSION TYPE CYCLE ──────────────────────────────────────────
-function cycleSessionType() {
-  sessionTypeIndex = (sessionTypeIndex + 1) % SESSION_TYPES.length;
-  sessionType = SESSION_TYPES[sessionTypeIndex];
-  document.getElementById('sessionTypeBtn').textContent = 'Mode: ' + sessionType;
-  showToast('Analysis mode: ' + sessionType);
+function connectFolder(){
+  const url=document.getElementById('folderUrlInput').value.trim();
+  const id=extractId(url);
+  if(!id){showToast('Could not parse folder ID — check the link');return;}
+  try{localStorage.setItem('vc_drive',JSON.stringify({url,id}));}catch(e){}
+  applyDriveConnected(url,id);
+  showToast('Drive folder connected!');
 }
 
-// ─── ANALYZE ─────────────────────────────────────────────────────
-async function analyzeTranscript() {
-  const transcript = finalTranscript.trim();
-  if (!transcript) { showToast('No transcript to analyze'); return; }
-
-  const sessionName = document.getElementById('sessionName').value || sessionType;
-  document.getElementById('feedbackEmpty').style.display = 'none';
-  document.getElementById('feedbackContent').classList.remove('visible');
-  document.getElementById('feedbackLoading').style.display = 'flex';
-  document.getElementById('analyzeBtn').disabled = true;
-
-  const sessionGuidance = {
-    'Job Interview': 'Focus on STAR method usage (Situation, Task, Action, Result), specificity of examples, whether the candidate directly answered the question asked, quantified achievements, and avoiding vague generalities.',
-    'Podcast / Media': 'Focus on storytelling arc, engaging hooks, memorable soundbites, whether answers are quotable, audience value, and natural conversational flow.',
-    'Sales Call': 'Focus on discovery question quality, objection handling clarity, value proposition articulation, call-to-action directness, and whether the prospect\'s problem was clearly understood and addressed.',
-    'Conference Talk': 'Focus on opening impact, key message clarity, supporting evidence strength, audience engagement cues, and whether the core thesis was clearly stated and reinforced.',
-    'Presentation': 'Focus on structure clarity, logical flow, use of concrete examples, persuasive framing, and whether each point builds toward a clear conclusion.'
-  };
-
-  const typeGuide = sessionGuidance[sessionType] || sessionGuidance['Job Interview'];
-
-  const systemPrompt = `You are an elite communication coach specializing in high-stakes speaking situations. Your PRIMARY focus is ANSWER QUALITY & CLARITY — how well ideas are expressed, how directly questions are answered, and how easy it is to understand the speaker's core point.
-
-Session type guidance for ${sessionType}: ${typeGuide}
-
-Scoring rubric:
-- "clarity" (PRIMARY): How clear, direct, and easy to follow are the answers? Are ideas expressed without ambiguity? Do answers stay on topic?
-- "answer_quality" (PRIMARY): Are answers complete, specific, and compelling? Do they directly address what was asked? Are claims backed by examples or data?
-- "confidence": Does the language convey conviction? Are there hedging phrases, excessive qualifiers, or tentative language?
-- "completeness": Are answers fully developed or do they trail off? Are key points missing?
-- "overall": Weighted average — clarity (35%) + answer_quality (35%) + confidence (15%) + completeness (15%)
-
-Return ONLY valid JSON matching this schema exactly — no markdown, no backticks, no extra text:
-{
-  "overall": <integer 0-100>,
-  "clarity": <integer 0-100>,
-  "answer_quality": <integer 0-100>,
-  "confidence": <integer 0-100>,
-  "completeness": <integer 0-100>,
-  "positives": [<2-4 specific strings praising what worked well>,],
-  "warnings": [<1-3 strings about patterns to avoid>],
-  "improvements": [<2-4 specific, actionable strings on how to improve answer quality and clarity>,],
-  "summary": <string: 2 sentences — overall assessment + single most impactful improvement>,
-  "filler_words": <integer count of um/uh/like/you know/sort of/kind of>,
-  "strong_phrases": [<up to 3 verbatim phrases from the transcript that were especially clear or impactful>],
-  "clarity_issues": [<up to 3 specific moments or patterns where clarity broke down>]
-}`;
-
-  const userMsg = `Session type: ${sessionType}\nSession name: ${sessionName}\nPrimary feedback focus: Answer Quality & Clarity\n\nTranscript:\n${transcript}`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMsg }]
-      })
-    });
-
-    const data = await res.json();
-    const raw = data.content?.map(c => c.text || '').join('');
-    const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    renderFeedback(json);
-    document.getElementById('saveFeedbackBtn').disabled = !driveConnected;
-    window._lastFeedback = json;
-  } catch (err) {
-    document.getElementById('feedbackLoading').style.display = 'none';
-    document.getElementById('feedbackEmpty').style.display = '';
-    document.getElementById('feedbackEmpty').textContent = 'Analysis failed. Check your connection and try again.';
-    console.error(err);
-  } finally {
-    document.getElementById('analyzeBtn').disabled = false;
-  }
+function applyDriveConnected(url,id){
+  driveConnected=true; driveFolderUrl=url; driveFolderId=id;
+  // Header pill
+  const pill=document.getElementById('driveBtn');
+  pill.classList.add('connected');
+  document.getElementById('driveLabel').textContent='Drive ✓';
+  // Panel
+  document.getElementById('driveConnectArea').style.display='none';
+  const box=document.getElementById('connectedBox');
+  box.classList.add('visible');
+  document.getElementById('folderOpenLink').href=url;
+  document.getElementById('folderIdText').textContent='Folder ID: '+id;
+  document.getElementById('driveActionsRow').style.display='flex';
+  if(getPlain().trim())document.getElementById('saveDriveBtn').disabled=false;
 }
 
-function scoreClass(n) {
-  if (n >= 75) return 'good';
-  if (n >= 50) return 'warn';
-  return 'bad';
+function disconnectDrive(){
+  driveConnected=false; driveFolderUrl=''; driveFolderId='';
+  try{localStorage.removeItem('vc_drive');}catch(e){}
+  document.getElementById('driveBtn').classList.remove('connected');
+  document.getElementById('driveLabel').textContent='Connect Drive';
+  document.getElementById('driveConnectArea').style.display='';
+  document.getElementById('connectedBox').classList.remove('visible');
+  document.getElementById('driveActionsRow').style.display='none';
+  document.getElementById('folderUrlInput').value='';
+  document.getElementById('connectBtn').disabled=true;
+  document.getElementById('saveDriveBtn').disabled=true;
+  showToast('Drive disconnected');
 }
 
-function renderFeedback(d) {
-  document.getElementById('feedbackLoading').style.display = 'none';
+function openDriveFolder(){if(driveFolderUrl)window.open(driveFolderUrl,'_blank','noopener');}
+function toggleDrivePanel(){document.getElementById('drivePanel').classList.toggle('visible');}
 
-  const html = `
-    <div class="score-row">
-      <div class="score-pill ${scoreClass(d.overall)}">
-        <div class="score-num">${d.overall}</div>
-        <div class="score-label">Overall</div>
-      </div>
-      <div class="score-pill ${scoreClass(d.clarity)}">
-        <div class="score-num">${d.clarity}</div>
-        <div class="score-label">Clarity ★</div>
-      </div>
-      <div class="score-pill ${scoreClass(d.answer_quality)}">
-        <div class="score-num">${d.answer_quality}</div>
-        <div class="score-label">Answer Quality ★</div>
-      </div>
-      <div class="score-pill ${scoreClass(d.confidence)}">
-        <div class="score-num">${d.confidence}</div>
-        <div class="score-label">Confidence</div>
-      </div>
-    </div>
-
-    <div class="feedback-section">
-      <div class="section-title">Summary</div>
-      <div class="feedback-item" style="border-left-color: var(--ink);">
-        <span>${d.summary}</span>
-      </div>
-    </div>
-
-    ${d.positives?.length ? `
-    <div class="feedback-section">
-      <div class="section-title">Strengths</div>
-      ${d.positives.map(p => `<div class="feedback-item positive"><span class="feedback-icon">✓</span><span>${p}</span></div>`).join('')}
-    </div>` : ''}
-
-    ${d.improvements?.length ? `
-    <div class="feedback-section">
-      <div class="section-title">Clarity & Answer Quality — Improvements</div>
-      ${d.improvements.map(p => `<div class="feedback-item improvement"><span class="feedback-icon">↑</span><span>${p}</span></div>`).join('')}
-    </div>` : ''}
-
-    ${d.clarity_issues?.length ? `
-    <div class="feedback-section">
-      <div class="section-title">Clarity Breakdown Moments</div>
-      ${d.clarity_issues.map(p => `<div class="feedback-item warning"><span class="feedback-icon">⚠</span><span>${p}</span></div>`).join('')}
-    </div>` : ''}
-
-    ${d.warnings?.length ? `
-    <div class="feedback-section">
-      <div class="section-title">Patterns to Avoid</div>
-      ${d.warnings.map(p => `<div class="feedback-item warning"><span class="feedback-icon">!</span><span>${p}</span></div>`).join('')}
-    </div>` : ''}
-
-    ${d.filler_words > 0 ? `
-    <div class="feedback-section">
-      <div class="section-title">Filler Words Detected</div>
-      <div class="feedback-item warning"><span class="feedback-icon">~</span><span>${d.filler_words} filler word${d.filler_words !== 1 ? 's' : ''} (um, uh, like, you know, sort of…). These interrupt your clarity — aim for silence instead.</span></div>
-    </div>` : `
-    <div class="feedback-section">
-      <div class="section-title">Filler Words</div>
-      <div class="feedback-item positive"><span class="feedback-icon">✓</span><span>No significant filler words detected — great discipline!</span></div>
-    </div>`}
-
-    ${d.strong_phrases?.length ? `
-    <div class="feedback-section">
-      <div class="section-title">Your Best Lines</div>
-      ${d.strong_phrases.map(p => `<div class="feedback-item positive" style="border-left-color:var(--gold)"><span class="feedback-icon">★</span><span>"${p}"</span></div>`).join('')}
-    </div>` : ''}
-  `;
-
-  const fc = document.getElementById('feedbackContent');
-  fc.innerHTML = html;
-  fc.classList.add('visible');
+function saveToDrive(){
+  const text=getPlain();
+  if(!text.trim()){showToast('Nothing to save');return;}
+  if(!driveConnected){showToast('Connect a Drive folder first');toggleDrivePanel();return;}
+  const name=(document.getElementById('sessionName').value.trim()||'Session').replace(/\s+/g,'_');
+  const date=new Date().toISOString().split('T')[0];
+  const filename=name+'_'+date+'.txt';
+  const blob=new Blob([text],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+  setTimeout(()=>{
+    showToast('Downloaded — drag it into your Drive folder');
+    window.open(driveFolderUrl,'_blank','noopener');
+  },500);
 }
 
-// ─── GOOGLE DRIVE ─────────────────────────────────────────────────
-// NOTE: Full OAuth requires a backend. This app integrates with Claude's
-// Google Drive connector (enabled via the Drive button in Claude's toolbar).
-// The Save to Drive functionality sends the file via the connector.
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function setStatus(msg){document.getElementById('statusLine').textContent=msg;}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
-function toggleDrivePanel() {
-  const panel = document.getElementById('drivePanel');
-  panel.classList.toggle('visible');
-}
-
-function connectDrive() {
-  // In Claude.ai, Google Drive is connected via the MCP connector.
-  // We show the user how to enable it.
-  showToast('Enable Drive in Claude\'s tool menu (⚙ icon) above');
-  document.getElementById('driveConnectArea').innerHTML = `
-    <h3>How to connect Drive</h3>
-    <p>1. Click the <strong>⚙ Tools</strong> or connector icon in Claude's toolbar above.<br>
-    2. Find <strong>Google Drive</strong> and click Connect.<br>
-    3. Authorize access — Claude will save transcripts directly to your folder.<br><br>
-    Once connected, use the <strong>↑ Save to Drive</strong> buttons in this app.</p>
-    <button class="drive-btn" onclick="simulateDriveConnected()">I've Connected Drive ✓</button>
-  `;
-}
-
-function simulateDriveConnected() {
-  driveConnected = true;
-  document.getElementById('driveDot').parentElement.classList.add('connected');
-  document.getElementById('driveLabel').textContent = 'Drive Connected';
-  document.getElementById('driveConnectArea').style.display = 'none';
-  document.getElementById('driveFiles').classList.add('visible');
-  loadDriveFiles();
-  if (finalTranscript.trim()) document.getElementById('saveDriveBtn').disabled = false;
-  showToast('Drive connected! Transcripts will auto-save.');
-}
-
-function loadDriveFiles() {
-  const list = document.getElementById('driveFileList');
-  list.innerHTML = `<div class="loading-row"><div class="spinner"></div><span>Loading Drive folder…</span></div>`;
-  // Simulated — in production this calls Claude's Drive MCP connector
-  setTimeout(() => {
-    const files = [
-      { name: 'Google_PM_Interview_2026-05-01.txt', date: 'May 1' },
-      { name: 'Podcast_TechShow_2026-04-28.txt', date: 'Apr 28' },
-      { name: 'Sales_Call_Acme_2026-04-22.txt', date: 'Apr 22' },
-    ];
-    list.innerHTML = files.map(f => `
-      <div class="drive-file-item">
-        <div>
-          <div class="drive-file-name">📄 ${f.name}</div>
-          <div class="drive-file-date">${f.date}</div>
-        </div>
-        <button class="load-btn" onclick="loadFromDrive('${f.name}')">Load</button>
-      </div>
-    `).join('') || '<span class="feedback-empty">No transcripts saved yet.</span>';
-  }, 900);
-}
-
-function loadFromDrive(filename) {
-  showToast('Ask Claude to read this file from your Drive folder.');
-  toggleDrivePanel();
-}
-
-function saveToDrive() {
-  if (!finalTranscript.trim()) { showToast('Nothing to save'); return; }
-  const name = document.getElementById('sessionName').value || sessionType;
-  const date = new Date().toISOString().split('T')[0];
-  const filename = `${name.replace(/\s+/g,'_')}_${date}.txt`;
-  // Trigger download as fallback + instruct
-  const blob = new Blob([finalTranscript], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  showToast('Saved! Also ask Claude to upload to Drive folder.');
-}
-
-function saveFeedbackToDrive() {
-  if (!window._lastFeedback) { showToast('Run analysis first'); return; }
-  const name = document.getElementById('sessionName').value || sessionType;
-  const date = new Date().toISOString().split('T')[0];
-  const feedback = window._lastFeedback;
-  const text = `VOICECOACH FEEDBACK REPORT
-Session: ${name} | Date: ${date} | Type: ${sessionType}
-
-SCORES
-Overall: ${feedback.overall}/100
-Clarity: ${feedback.clarity}/100
-Confidence: ${feedback.confidence}/100
-Completeness: ${feedback.completeness}/100
-
-SUMMARY
-${feedback.summary}
-
-STRENGTHS
-${(feedback.positives||[]).map(p=>'• '+p).join('\n')}
-
-IMPROVEMENTS
-${(feedback.improvements||[]).map(p=>'• '+p).join('\n')}
-
-FILLER WORDS: ${feedback.filler_words}
-
-TRANSCRIPT
-${finalTranscript}
-`;
-  const blob = new Blob([text], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `Feedback_${name.replace(/\s+/g,'_')}_${date}.txt`;
-  a.click();
-  showToast('Feedback saved! Upload to Drive via Claude.');
-}
-
-// ─── HELPERS ─────────────────────────────────────────────────────
-function setStatus(msg) { document.getElementById('statusLine').textContent = msg; }
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// init
 setMode('live');
 </script>
 </body>
